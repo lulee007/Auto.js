@@ -17,8 +17,8 @@ public class CodeGenerator {
     public static final int WAIT_FOR = 2;
     public static final int EXISTS = 3;
 
-    private ReadOnlyUiObject mRoot;
-    private ReadOnlyUiObject mTarget;
+    private final ReadOnlyUiObject mRoot;
+    private final ReadOnlyUiObject mTarget;
     private boolean mUsingId = true;
     private boolean mUsingDesc = true;
     private boolean mUsingText = true;
@@ -66,18 +66,21 @@ public class CodeGenerator {
         generator.setUsingDesc(mUsingDesc);
         generator.setUsingId(mUsingId);
         generator.setUsingText(mUsingText);
-        String selector = generateCode(generator, mRoot, mTarget, 2, 2);
+        String selector = generateCode(generator, mRoot, mTarget, 2, 2, true);
         if (selector == null)
             return null;
         return generateAction(selector);
     }
 
-    protected String generateCode(UiSelectorGenerator generator, UiObject root, UiObject target, int maxParentLevel, int maxChildrenLevel) {
-        return generateCode(generator, root, target, maxParentLevel, maxChildrenLevel, true);
-    }
 
     protected String generateCode(UiSelectorGenerator generator, UiObject root, UiObject target, int maxParentLevel, int maxChildrenLevel, boolean withFind) {
-        String selector = withFind ? generator.generateSelectorCode() : generator.generateSelector().toString();
+        String selector;
+        if (withFind) {
+            selector = generator.generateSelectorCode();
+        } else {
+            UiGlobalSelector s = generator.generateSelector();
+            selector = s == null ? null : s.toString();
+        }
         if (selector != null) {
             return selector;
         }

@@ -1,11 +1,11 @@
 
 module.exports = function(__runtime__, scope){
 
-    var __selector__ = __runtime__.selector(scope.__engine__);
+    var __selector__ = __runtime__.selector();
     var __obj__ = new java.lang.Object();
 
     for(var method in __selector__){
-        if(!__obj__[method] && !scope[method]){
+        if(!(method in __obj__) && !(method in scope)){
             scope[method] = (function(method) {
                 return function(){
                     var s = selector();
@@ -16,8 +16,7 @@ module.exports = function(__runtime__, scope){
     }
 
     return function(){
-        var s = __runtime__.selector(scope.__engine__);
-        return s;
+        return __runtime__.selector();
     };
 }
 

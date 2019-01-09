@@ -1,8 +1,8 @@
 
-module.exports = function(__runtime__, scope){
+module.exports = function(runtime, global){
     importClass(android.content.Intent);
-    var app = Object.create(__runtime__.app);
-    var context = scope.context;
+    var app = Object.create(runtime.app);
+    var context = global.context;
 
     app.intent = function(i) {
       var intent = new android.content.Intent();
@@ -11,28 +11,47 @@ module.exports = function(__runtime__, scope){
       }
       if (i.extras) {
           for (var key in i.extras) {
-              intent.putExtra(key, i.extras[key].toString());
+              intent.putExtra(key, i.extras[key]);
           }
       }
       if (i.category) {
-          for (var key in i.category) {
-              intent.addCategory(key, i.category[key]);
+          if(i.category instanceof Array){
+              for(var j = 0; i < i.category.length; j++){
+                  intent.addCategory(i.category[j]);
+              }
+          }else{
+              intent.addCategory(i.category);
           }
       }
       if (i.action) {
+          if(i.action.indexOf(".") == -1){
+              i.action = "android.intent.action." + i.action;
+          }
           intent.setAction(i.action);
       }
       if (i.type) {
-          intent.setType(i.type);
-      }
-      if (i.data) {
+          if(i.data){
+              intent.setDataAndType(android.net.Uri.parse(i.data), i.type);
+          }else{
+              intent.setType(i.type);
+          }
+      }else if (i.data) {
           intent.setData(android.net.Uri.parse(i.data));
       }
       return intent;
     }
 
     app.startActivity = function(i){
-        context.startActivity(app.intent(i).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK));
+        if(typeof(i) == "string"){
+            if(runtime.getProperty("class." + i)){
+                context.startActivity(new Intent(context, runtime.getProperty("class." + i))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                return;
+            }else{
+                throw new Error("class " + i + " not found");
+            }
+        }
+        context.startActivity(app.intent(i).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     app.sendBroadcast = function(i){
@@ -41,7 +60,7 @@ module.exports = function(__runtime__, scope){
 
     app.sendEmail = function(options){
         options = options || {};
-        var i = new Intent(ACTION_SENDTO);
+        var i = new Intent(Intent.ACTION_SENDTO);
         if(options.email){
             i.putExtra(Intent.EXTRA_EMAIL, toArray(options.email));
         }
@@ -72,7 +91,15 @@ module.exports = function(__runtime__, scope){
 
     app.launch = app.launchPackage;
 
-    scope.__asGlobal__(app, ['launchPackage', 'launch', 'launchApp', 'getPackageName', 'getAppName', 'openAppSetting']);
+    app.versionCode = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+    app.versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+
+    app.autojs = {
+        versionCode: org.autojs.autojs.BuildConfig.VERSION_CODE,
+        versionName: org.autojs.autojs.BuildConfig.VERSION_NAME
+    };
+
+    global.__asGlobal__(app, ['launchPackage', 'launch', 'launchApp', 'getPackageName', 'getAppName', 'openAppSetting']);
 
     return app;
 }
