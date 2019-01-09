@@ -2,11 +2,10 @@ package com.stardust.util;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.IdRes;
+import androidx.annotation.IdRes;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 /**
  * Created by Stardust on 2017/1/24.
@@ -19,6 +18,7 @@ public class ViewUtil {
         return (V) view.findViewById(resId);
     }
 
+    // FIXME: 2018/1/23 not working in some devices (https://github.com/hyb1996/Auto.js/issues/268)
     public static int getStatusBarHeight(Context context) {
         int result = 0;
         int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");

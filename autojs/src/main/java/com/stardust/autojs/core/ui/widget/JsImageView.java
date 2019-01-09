@@ -1,13 +1,14 @@
 package com.stardust.autojs.core.ui.widget;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import androidx.core.widget.ImageViewCompat;
+import androidx.appcompat.widget.AppCompatImageView;
 import android.util.AttributeSet;
 
 import com.makeramen.roundedimageview.RoundedImageView;
 
-import org.autojs.dynamiclayoutinflater.util.Drawables;
+import com.stardust.autojs.core.image.ImageWrapper;
+import com.stardust.autojs.core.ui.inflater.util.Drawables;
 
 /**
  * Created by Stardust on 2017/11/30.
@@ -16,10 +17,12 @@ import org.autojs.dynamiclayoutinflater.util.Drawables;
 public class JsImageView extends RoundedImageView {
 
     private boolean mCircle;
+    private Drawables mDrawables;
 
     public JsImageView(Context context) {
         super(context);
     }
+
 
     public JsImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,14 +44,27 @@ public class JsImageView extends RoundedImageView {
     }
 
     public void setSource(String uri) {
-        Drawables.loadInto(this, Uri.parse(uri));
+        getDrawables().setupWithImage(this, uri);
+    }
+
+    public void setSource(ImageWrapper image) {
+        setImageBitmap(image.getBitmap());
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight());
         if (mCircle) {
-            setCornerRadius(Math.min(getWidth(), getHeight()) / 2);
+            setCornerRadius(getMeasuredWidth() / 2);
         }
+    }
+
+    public void setDrawables(Drawables drawables) {
+        mDrawables = drawables;
+    }
+
+    public Drawables getDrawables() {
+        return mDrawables;
     }
 }

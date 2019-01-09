@@ -1,7 +1,5 @@
 package com.stardust.autojs.runtime;
 
-import com.stardust.autojs.core.accessibility.UiCollection;
-
 /**
  * Created by Stardust on 2017/7/21.
  */
@@ -15,9 +13,11 @@ public class ScriptBridges {
 
         Object call(Object func, Object target, Object arg);
 
-        Object toArray(Object o);
+        Object toArray(Iterable o);
 
         Object toString(Object obj);
+
+        Object asArray(Object obj);
     }
 
     private Bridges mBridges;
@@ -37,14 +37,18 @@ public class ScriptBridges {
     }
 
 
-    public Object toArray(Object c) {
+    public Object toArray(Iterable c) {
         checkBridges();
         return mBridges.toArray(c);
     }
 
-
     public Object toString(Object obj) {
         checkBridges();
         return mBridges.toString(obj);
+    }
+
+    public Object asArray(Object obj) {
+        checkBridges();
+        return mBridges.asArray(obj);
     }
 }

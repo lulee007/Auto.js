@@ -5,13 +5,13 @@ import android.accessibilityservice.GestureDescription;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Handler;
-import android.support.annotation.RequiresApi;
+import androidx.annotation.RequiresApi;
 import android.util.Log;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.stardust.autojs.annotation.ScriptInterface;
 import com.stardust.autojs.runtime.ScriptRuntime;
-import com.stardust.autojs.runtime.accessibility.AutomatorConfig;
+import com.stardust.autojs.runtime.accessibility.AccessibilityConfig;
 import com.stardust.automator.GlobalActionAutomator;
 import com.stardust.automator.UiObject;
 import com.stardust.automator.simple_action.ActionFactory;
@@ -19,9 +19,6 @@ import com.stardust.automator.simple_action.ActionTarget;
 import com.stardust.automator.simple_action.SimpleAction;
 import com.stardust.util.DeveloperUtils;
 import com.stardust.util.ScreenMetrics;
-
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeJavaObject;
 
 /**
  * Created by Stardust on 2017/4/2.
@@ -54,7 +51,7 @@ public class SimpleActionAutomator {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @ScriptInterface
     public ActionTarget editable(int i) {
-        mScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
+        ScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
         return new ActionTarget.EditableActionTarget(i);
     }
 
@@ -85,22 +82,22 @@ public class SimpleActionAutomator {
 
     @ScriptInterface
     public boolean scrollBackward(int i) {
-        return performAction(ActionFactory.createScrollAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD, i));
+        return performAction(ActionFactory.INSTANCE.createScrollAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD, i));
     }
 
     @ScriptInterface
     public boolean scrollForward(int i) {
-        return performAction(ActionFactory.createScrollAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD, i));
+        return performAction(ActionFactory.INSTANCE.createScrollAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD, i));
     }
 
     @ScriptInterface
     public boolean scrollMaxBackward() {
-        return performAction(ActionFactory.createScrollMaxAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD));
+        return performAction(ActionFactory.INSTANCE.createScrollMaxAction(AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD));
     }
 
     @ScriptInterface
     public boolean scrollMaxForward() {
-        return performAction(ActionFactory.createScrollMaxAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD));
+        return performAction(ActionFactory.INSTANCE.createScrollMaxAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD));
     }
 
     @ScriptInterface
@@ -116,15 +113,15 @@ public class SimpleActionAutomator {
     @ScriptInterface
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public boolean setText(ActionTarget target, String text) {
-        mScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
+        ScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
         return performAction(target.createAction(AccessibilityNodeInfo.ACTION_SET_TEXT, text));
     }
 
     @ScriptInterface
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public boolean appendText(ActionTarget target, String text) {
-        mScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
-        return performAction(target.createAction(UiObject.ACTION_APPEND_TEXT, text));
+        ScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
+        return performAction(target.createAction(UiObject.Companion.getACTION_APPEND_TEXT(), text));
     }
 
     @ScriptInterface
@@ -140,7 +137,7 @@ public class SimpleActionAutomator {
     @ScriptInterface
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public boolean powerDialog() {
-        mScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
+        ScriptRuntime.requiresApi(Build.VERSION_CODES.LOLLIPOP);
         return performGlobalAction(AccessibilityService.GLOBAL_ACTION_POWER_DIALOG);
     }
 
@@ -192,8 +189,8 @@ public class SimpleActionAutomator {
     }
 
     private void prepareForGesture() {
+        ScriptRuntime.requiresApi(24);
         ensureAccessibilityServiceEnabled();
-        mScriptRuntime.requiresApi(24);
         if (mGlobalActionAutomator != null)
             return;
         mGlobalActionAutomator = new GlobalActionAutomator(new Handler(mScriptRuntime.loopers.getServantLooper()));
@@ -240,7 +237,7 @@ public class SimpleActionAutomator {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @ScriptInterface
     public boolean paste(ActionTarget target) {
-        mScriptRuntime.requiresApi(18);
+        ScriptRuntime.requiresApi(18);
         return performAction(target.createAction(AccessibilityNodeInfo.ACTION_PASTE));
     }
 
@@ -252,15 +249,15 @@ public class SimpleActionAutomator {
     @SuppressWarnings("unchecked")
     private boolean performAction(SimpleAction simpleAction) {
         ensureAccessibilityServiceEnabled();
-        if (AutomatorConfig.isUnintendedGuardEnabled() && isRunningPackageSelf()) {
+        if (AccessibilityConfig.isUnintendedGuardEnabled() && isRunningPackageSelf()) {
             Log.d(TAG, "performAction: running package is self. return false");
             return false;
         }
-        AccessibilityNodeInfo root = mAccessibilityBridge.getRootInActiveWindow();
+        AccessibilityNodeInfo root = mAccessibilityBridge.getRootInCurrentWindow();
         if (root == null)
             return false;
         Log.v(TAG, "performAction: " + simpleAction + " root = " + root);
-        return simpleAction.perform(UiObject.createRoot(root));
+        return simpleAction.perform(UiObject.Companion.createRoot(root));
     }
 
     private boolean isRunningPackageSelf() {
